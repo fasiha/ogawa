@@ -1,9 +1,11 @@
 {
-  "name": "thornton-africa",
+  "name": "ogawa",
   "version": "1.0.0",
   "description": "",
   "main": "Cesium.js",
   "scripts": {
+    "dev": "snowpack dev",
+    "build": "snowpack build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
