@@ -29,9 +29,12 @@ var model = new Cesium.ProviderViewModel({
 models.push(model);
 
 // Create the viewer!
-var viewer = new Cesium.Viewer(
-    'cesiumContainer',
-    {animation: false, timeline: false, imageryProviderViewModels: models});
+var viewer = new Cesium.Viewer('cesiumContainer', {
+  animation: false,
+  timeline: false,
+  imageryProviderViewModels: models,
+  skyAtmosphere: false
+});
 var imageryLayers = viewer.imageryLayers;
 if (window) {
   (window as any).viewer = viewer;
@@ -39,14 +42,12 @@ if (window) {
 
 // Add our texture-shaded elevation!
 function addAdditionalLayerOption(
-    name: string, imageryProvider: Cesium.TileMapServiceImageryProvider,
-    alpha: number, contrast: number) {
+    imageryProvider: Cesium.TileMapServiceImageryProvider, alpha: number,
+    contrast: number, brightness: number) {
   var layer = imageryLayers.addImageryProvider(imageryProvider);
-  layer.alpha = Cesium.defaultValue(alpha, 0.5);
-  layer.contrast = Cesium.defaultValue(contrast, 1.0);
-  // layer.show = true;
-  // layer.name = name;
-  // Cesium.knockout.track(layer, ['alpha', 'show', 'name']);
+  layer.alpha = alpha;
+  layer.contrast = contrast;
+  layer.brightness = brightness;
   return layer;
 }
 var tmsProvider = new Cesium.TileMapServiceImageryProvider({
@@ -54,10 +55,7 @@ var tmsProvider = new Cesium.TileMapServiceImageryProvider({
   credit: new Cesium.Credit('Ahmed Fasih, CGIAR-SRTM 90m'),
   flipXY: true
 });
-var tms = addAdditionalLayerOption('TMS', tmsProvider, 0.75, 1.4);
 
-// Create some controls!
-var ul = document.createElement('ul');
 var params = {
   brightness: 1,
   contrast: 1,
@@ -66,6 +64,12 @@ var params = {
   texContrast: 2,
   texAlpha: 0.8
 };
+
+var tms = addAdditionalLayerOption(
+    tmsProvider, params.texAlpha, params.texContrast, params.texBrightness);
+
+// Create some controls!
+var ul = document.createElement('ul');
 type Param = keyof typeof params;
 var maxes: Partial<{[k in Param]: number}> = {texAlpha: 1};
 for (const param of (Object.keys(params) as Param[])) {
