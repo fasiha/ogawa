@@ -33,6 +33,9 @@ var viewer = new Cesium.Viewer(
     'cesiumContainer',
     {animation: false, timeline: false, imageryProviderViewModels: models});
 var imageryLayers = viewer.imageryLayers;
+if (window) {
+  (window as any).viewer = viewer;
+}
 
 // Add our texture-shaded elevation!
 function addAdditionalLayerOption(
