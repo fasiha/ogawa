@@ -40,6 +40,30 @@ if (window) {
   (window as any).viewer = viewer;
 }
 
+Cesium.GeoJsonDataSource
+    .load(
+        'ne_10m_rivers_lake_centerlines_scale_rank.json',
+        {credit: 'Natural Earth II'})
+    .then(dataSource => {
+      const entities = dataSource.entities.values;
+      const r = new Set('Gambia,Sénégal,Niger,Benue'.split(','));
+      for (const entity of entities) {
+        const polyline = entity.polyline;
+        if (polyline) {
+          polyline.clampToGround = true as any;
+          const properties: Record<string, any> = entity.properties as any;
+          if (r.has('' + properties['name'])) {
+            polyline.material = Cesium.Color.HOTPINK as any;
+          } else {
+            polyline.material = Cesium.Color.WHITE as any;
+          }
+          polyline.width =
+              1 + Math.max(0, 10 - properties['scalerank']) / 4 as any;
+        }
+      }
+      viewer.dataSources.add(dataSource);
+    });
+
 // Add our texture-shaded elevation!
 function addAdditionalLayerOption(
     imageryProvider: Cesium.TileMapServiceImageryProvider, alpha: number,
