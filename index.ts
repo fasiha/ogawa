@@ -12,38 +12,27 @@ const createDefaultImageryProviderViewModels =
 // The Black Marble model from Cesium
 // (https://cesiumjs.org/data-and-assets/imagery/black-marble/) is sometimes
 // blocked due to CORS, so load it from GitHub Pages.
-var models = createDefaultImageryProviderViewModels().filter(
-    model => model.name !== 'Earth at night');
+var models = createDefaultImageryProviderViewModels().filter(model => model.name !== 'Earth at night');
 var model = new Cesium.ProviderViewModel({
   name: 'Black Marble Night Lights',
   iconUrl: 'Widgets/Images/ImageryProviders/earthAtNight.png',
-  tooltip:
-      'Nighttime view of the Earth, collected by the Suomi NPP satellite in 2012',
+  tooltip: 'Nighttime view of the Earth, collected by the Suomi NPP satellite in 2012',
   creationFunction: function() {
-    return new Cesium.TileMapServiceImageryProvider({
-      url: 'https://fasiha.github.io/nasa-black-marble-tiles',
-      credit: new Cesium.Credit('NASA Night Lights 2012')
-    });
+    return new Cesium.TileMapServiceImageryProvider(
+        {url: 'https://fasiha.github.io/nasa-black-marble-tiles', credit: new Cesium.Credit('NASA Night Lights 2012')});
   }
 });
 models.push(model);
 
 // Create the viewer!
-var viewer = new Cesium.Viewer('cesiumContainer', {
-  animation: false,
-  timeline: false,
-  imageryProviderViewModels: models,
-  skyAtmosphere: false
-});
+var viewer = new Cesium.Viewer(
+    'cesiumContainer', {animation: false, timeline: false, imageryProviderViewModels: models, skyAtmosphere: false});
 var imageryLayers = viewer.imageryLayers;
 if (window) {
   (window as any).viewer = viewer;
 }
 
-Cesium.GeoJsonDataSource
-    .load(
-        'ne_10m_rivers_lake_centerlines_scale_rank.json',
-        {credit: 'Natural Earth II'})
+Cesium.GeoJsonDataSource.load('ne_10m_rivers_lake_centerlines_scale_rank.json', {credit: 'Natural Earth II'})
     .then(dataSource => {
       const entities = dataSource.entities.values;
       const r = new Set('Gambia,Sénégal,Niger,Benue'.split(','));
@@ -57,17 +46,15 @@ Cesium.GeoJsonDataSource
           } else {
             polyline.material = Cesium.Color.WHITE as any;
           }
-          polyline.width =
-              1 + Math.max(0, 10 - properties['scalerank']) / 4 as any;
+          polyline.width = 1 + Math.max(0, 10 - properties['scalerank']) / 4 as any;
         }
       }
       viewer.dataSources.add(dataSource);
     });
 
 // Add our texture-shaded elevation!
-function addAdditionalLayerOption(
-    imageryProvider: Cesium.TileMapServiceImageryProvider, alpha: number,
-    contrast: number, brightness: number) {
+function addAdditionalLayerOption(imageryProvider: Cesium.TileMapServiceImageryProvider, alpha: number,
+                                  contrast: number, brightness: number) {
   var layer = imageryLayers.addImageryProvider(imageryProvider);
   layer.alpha = alpha;
   layer.contrast = contrast;
@@ -80,17 +67,9 @@ var tmsProvider = new Cesium.TileMapServiceImageryProvider({
   flipXY: true
 });
 
-var params = {
-  brightness: 1,
-  contrast: 1,
-  saturation: 1,
-  texBrightness: 1,
-  texContrast: 2,
-  texAlpha: 0.8
-};
+var params = {brightness: 1, contrast: 1, saturation: 1, texBrightness: 1, texContrast: 2, texAlpha: 0.8};
 
-var tms = addAdditionalLayerOption(
-    tmsProvider, params.texAlpha, params.texContrast, params.texBrightness);
+var tms = addAdditionalLayerOption(tmsProvider, params.texAlpha, params.texContrast, params.texBrightness);
 
 // Create some controls!
 var ul = document.createElement('ul');
