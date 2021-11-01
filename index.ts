@@ -32,53 +32,6 @@ if (window) {
   (window as any).viewer = viewer;
 }
 
-// We want rivers!
-var scene = viewer.scene;
-var pickedName = '';
-Cesium.GeoJsonDataSource.load('ne_10m_rivers_lake_centerlines_scale_rank.json', {credit: 'Natural Earth II'})
-    .then(dataSource => {
-      const entities = dataSource.entities.values;
-      const r = new Set('Gambia,Sénégal,Niger,Benue'.split(','));
-      for (const entity of entities) {
-        const polyline = entity.polyline;
-        if (polyline) {
-          polyline.clampToGround = true as any;
-          const properties: Record<string, any> = entity.properties as any;
-          const name = '' + properties['name'];
-          const normalColor = r.has(name) ? Cesium.Color.HOTPINK : Cesium.Color.WHITE;
-          polyline.material = new Cesium.ColorMaterialProperty(new Cesium.CallbackProperty(
-              (_time, result) => (pickedName === name ? Cesium.Color.SIENNA : normalColor).clone(result), false));
-          polyline.width = 1 + Math.max(0, 10 - properties['scalerank']) / 4 as any;
-        }
-      }
-      viewer.dataSources.add(dataSource);
-    });
-// We want to see river names!
-var cursor = viewer.entities.add({
-  label: {
-    show: false,
-    showBackground: true,
-    font: "14px",
-    horizontalOrigin: Cesium.HorizontalOrigin.LEFT,
-    verticalOrigin: Cesium.VerticalOrigin.TOP,
-    pixelOffset: new Cesium.Cartesian2(15, 0),
-  },
-});
-var handler = new Cesium.ScreenSpaceEventHandler(scene.canvas);
-handler.setInputAction(function(movement) {
-  var pickedObject = scene.pick(movement.endPosition);
-  var cartesian = viewer.camera.pickEllipsoid(movement.endPosition, scene.globe.ellipsoid);
-  if (pickedObject?.id?.name && cartesian) {
-    cursor.position = cartesian as any;
-    (cursor as any).label.show = true;
-    pickedName = pickedObject?.id?.name;
-    (cursor as any).label.text = pickedName as any;
-  } else {
-    (cursor as any).label.show = false;
-    pickedName = '';
-  }
-}, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
-
 // Add our texture-shaded elevation!
 function addAdditionalLayerOption(imageryProvider: Cesium.TileMapServiceImageryProvider, alpha: number,
                                   contrast: number, brightness: number) {
@@ -138,5 +91,97 @@ for (const param of (Object.keys(params) as Param[])) {
   li.appendChild(input)
   li.appendChild(span);
   ul.appendChild(li)
+}
+{
+  const toggle = document.createElement('input');
+  toggle.type = 'checkbox';
+  toggle.id = 'checkbox-texture';
+  toggle.name = 'checkbox-texture';
+  toggle.checked = true;
+  toggle.onchange = e => { tms.show = (e.target as any).checked; };
+  const label = document.createElement('label');
+  label.htmlFor = toggle.name;
+  label.textContent = 'Show texture-shaded elevation?';
+  const li = document.createElement('li');
+  li.appendChild(toggle);
+  li.appendChild(label);
+  ul.appendChild(li);
+}
+{
+  function riversLoaded() {
+    for (let i = 0; i < viewer.dataSources.length; i++) {
+      const src = viewer.dataSources.get(i);
+      if (src.name.startsWith('ne_10m_rivers_lake_centerlines_scale_rank')) {
+        return src;
+      }
+    }
+    return undefined;
+  }
+
+  const toggle = document.createElement('input');
+  toggle.type = 'checkbox';
+  toggle.id = 'checkbox-rivers';
+  toggle.name = 'checkbox-rivers';
+  toggle.checked = false;
+  toggle.onchange = e => {
+    const src = riversLoaded();
+    if (src) {
+      src.show = (e.target as any).checked;
+    } else {
+      // We want rivers!
+      var scene = viewer.scene;
+      var pickedName = '';
+      Cesium.GeoJsonDataSource.load('ne_10m_rivers_lake_centerlines_scale_rank.json', {credit: 'Natural Earth II'})
+          .then(dataSource => {
+            const entities = dataSource.entities.values;
+            const r = new Set('Gambia,Sénégal,Niger,Benue'.split(','));
+            for (const entity of entities) {
+              const polyline = entity.polyline;
+              if (polyline) {
+                polyline.clampToGround = true as any;
+                const properties: Record<string, any> = entity.properties as any;
+                const name = '' + properties['name'];
+                const normalColor = r.has(name) ? Cesium.Color.HOTPINK : Cesium.Color.WHITE;
+                polyline.material = new Cesium.ColorMaterialProperty(new Cesium.CallbackProperty(
+                    (_time, result) => (pickedName === name ? Cesium.Color.SIENNA : normalColor).clone(result), false));
+                polyline.width = 1 + Math.max(0, 10 - properties['scalerank']) / 4 as any;
+              }
+            }
+            viewer.dataSources.add(dataSource);
+          });
+      // We want to see river names!
+      var cursor = viewer.entities.add({
+        label: {
+          show: false,
+          showBackground: true,
+          font: "14px",
+          horizontalOrigin: Cesium.HorizontalOrigin.LEFT,
+          verticalOrigin: Cesium.VerticalOrigin.TOP,
+          pixelOffset: new Cesium.Cartesian2(15, 0),
+        },
+      });
+      var handler = new Cesium.ScreenSpaceEventHandler(scene.canvas);
+      handler.setInputAction(function(movement) {
+        var pickedObject = scene.pick(movement.endPosition);
+        var cartesian = viewer.camera.pickEllipsoid(movement.endPosition, scene.globe.ellipsoid);
+        if (pickedObject?.id?.name && cartesian) {
+          cursor.position = cartesian as any;
+          (cursor as any).label.show = true;
+          pickedName = pickedObject?.id?.name;
+          (cursor as any).label.text = pickedName as any;
+        } else {
+          (cursor as any).label.show = false;
+          pickedName = '';
+        }
+      }, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
+    }
+  };
+  const label = document.createElement('label');
+  label.htmlFor = toggle.name;
+  label.textContent = 'Show rivers? (takes a few seconds)';
+  const li = document.createElement('li');
+  li.appendChild(toggle);
+  li.appendChild(label);
+  ul.appendChild(li);
 }
 document.querySelector('#controls')?.appendChild(ul)
