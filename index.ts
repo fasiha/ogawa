@@ -226,6 +226,23 @@ for (const param of (Object.keys(params) as Param[])) {
     },
   });
 
+  /*
+  Via:
+
+  var flyto = {
+    orientation: {heading: viewer.camera.heading, pitch: viewer.camera.pitch, roll: viewer.camera.roll},
+    destination:
+        Cesium.Cartesian3.fromDegrees(Cesium.Math.toDegrees(viewer.scene.camera.positionCartographic.longitude),
+                                      Cesium.Math.toDegrees(viewer.scene.camera.positionCartographic.latitude),
+                                      viewer.scene.camera.positionCartographic.height)
+  };
+  */
+  viewer.camera.flyTo({
+    destination: Cesium.Cartesian3.fromDegrees(-19.8, 7.1, 9918918),
+    orientation:
+        {heading: Cesium.Math.toRadians(43), pitch: Cesium.Math.toRadians(-79), roll: Cesium.Math.toRadians(350)}
+  });
+
   const toggle = document.createElement('input');
   toggle.type = 'checkbox';
   toggle.id = 'checkbox-canary-current';
@@ -240,4 +257,4 @@ for (const param of (Object.keys(params) as Param[])) {
   li.appendChild(label);
   ul.appendChild(li);
 }
-document.querySelector('#controls')?.appendChild(ul)
+document.querySelector('#controls')?.appendChild(ul);
