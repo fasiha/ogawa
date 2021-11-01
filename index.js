@@ -29,8 +29,8 @@ const createDefaultImageryProviderViewModels = Cesium.createDefaultImageryProvid
 // The Black Marble model from Cesium
 // (https://cesiumjs.org/data-and-assets/imagery/black-marble/) is sometimes
 // blocked due to CORS, so load it from GitHub Pages.
-var models = createDefaultImageryProviderViewModels().filter(model => model.name !== 'Earth at night');
-var model = new Cesium.ProviderViewModel({
+const models = createDefaultImageryProviderViewModels().filter(model => model.name !== 'Earth at night');
+const model = new Cesium.ProviderViewModel({
     name: 'Black Marble Night Lights',
     iconUrl: 'Cesium-1.86.1/Widgets/Images/ImageryProviders/earthAtNight.png',
     tooltip: 'Nighttime view of the Earth, collected by the Suomi NPP satellite in 2012',
@@ -40,29 +40,38 @@ var model = new Cesium.ProviderViewModel({
 });
 models.push(model);
 // Create the viewer!
-var viewer = new Cesium.Viewer('cesiumContainer', { animation: false, timeline: false, imageryProviderViewModels: models, skyAtmosphere: false });
-var imageryLayers = viewer.imageryLayers;
+const viewer = new Cesium.Viewer('cesiumContainer', { animation: false, timeline: false, imageryProviderViewModels: models, skyAtmosphere: false });
+const imageryLayers = viewer.imageryLayers;
 if (window) {
     window.viewer = viewer;
 }
 // Add our texture-shaded elevation!
 function addAdditionalLayerOption(imageryProvider, alpha, contrast, brightness) {
-    var layer = imageryLayers.addImageryProvider(imageryProvider);
+    const layer = imageryLayers.addImageryProvider(imageryProvider);
     layer.alpha = alpha;
     layer.contrast = contrast;
     layer.brightness = brightness;
     return layer;
 }
-var tmsProvider = new Cesium.TileMapServiceImageryProvider({
+const tmsProvider = new Cesium.TileMapServiceImageryProvider({
     url: 'https://d2i33ldayhex0u.cloudfront.net/world-tex-cgiar-90m',
     credit: new Cesium.Credit('Ahmed Fasih, CGIAR-SRTM 90m'),
     flipXY: true
 });
-var params = { brightness: 1, contrast: 1, saturation: 1, texBrightness: 1, texContrast: 2, texAlpha: 0.8 };
-var tms = addAdditionalLayerOption(tmsProvider, params.texAlpha, params.texContrast, params.texBrightness);
+const params = {
+    brightness: 1,
+    contrast: 1,
+    saturation: 1,
+    texBrightness: 1,
+    texContrast: 2,
+    texAlpha: 0.8
+};
+const tms = addAdditionalLayerOption(tmsProvider, params.texAlpha, params.texContrast, params.texBrightness);
 // Create some controls!
-var ul = document.createElement('ul');
-var maxes = { texAlpha: 1 };
+const ul = document.createElement('ul');
+const maxes = {
+    texAlpha: 1
+};
 for (const param of Object.keys(params)) {
     const input = document.createElement('input');
     input.type = 'range';
@@ -138,8 +147,8 @@ for (const param of Object.keys(params)) {
         }
         else {
             // We want rivers!
-            var scene = viewer.scene;
-            var pickedName = '';
+            const scene = viewer.scene;
+            let pickedName = '';
             Cesium.GeoJsonDataSource.load('data/ne_10m_rivers_lake_centerlines_scale_rank.json', { credit: 'Natural Earth II' })
                 .then(dataSource => {
                 const entities = dataSource.entities.values;
@@ -158,7 +167,7 @@ for (const param of Object.keys(params)) {
                 viewer.dataSources.add(dataSource);
             });
             // We want to see river names!
-            var cursor = viewer.entities.add({
+            const cursor = viewer.entities.add({
                 label: {
                     show: false,
                     showBackground: true,
@@ -168,11 +177,11 @@ for (const param of Object.keys(params)) {
                     pixelOffset: new Cesium.Cartesian2(15, 0),
                 },
             });
-            var handler = new Cesium.ScreenSpaceEventHandler(scene.canvas);
+            const handler = new Cesium.ScreenSpaceEventHandler(scene.canvas);
             handler.setInputAction(function (movement) {
                 var _a, _b;
-                var pickedObject = scene.pick(movement.endPosition);
-                var cartesian = viewer.camera.pickEllipsoid(movement.endPosition, scene.globe.ellipsoid);
+                const pickedObject = scene.pick(movement.endPosition);
+                const cartesian = viewer.camera.pickEllipsoid(movement.endPosition, scene.globe.ellipsoid);
                 if (((_a = pickedObject === null || pickedObject === void 0 ? void 0 : pickedObject.id) === null || _a === void 0 ? void 0 : _a.name) && cartesian) {
                     cursor.position = cartesian;
                     cursor.label.show = true;
@@ -196,7 +205,7 @@ for (const param of Object.keys(params)) {
 }
 {
     // latlon
-    var places = {
+    const places = {
         Bojador: [26.133333, -14.5],
         Canaries: [27.931944, -15.386667],
         Madeira: [32.694167, -16.778056],
@@ -206,15 +215,15 @@ for (const param of Object.keys(params)) {
     };
     // https://www.4cities4dev.eu/filemanager/Materiali/ING_fotostoria_MAURITANIA_b.pdf mentions salt mining in Nouakchott
     // too
-    var canaryCurrentPlaces = viewer.entities.add(new Cesium.Entity());
-    var labelParams = {
+    const canaryCurrentPlaces = viewer.entities.add(new Cesium.Entity());
+    const labelParams = {
         font: '14px sans-serif',
         fillColor: Cesium.Color.WHITE,
         outlineColor: Cesium.Color.BLACK,
         outlineWidth: 3,
         style: Cesium.LabelStyle.FILL_AND_OUTLINE,
     };
-    for (var [place, [lat, lon]] of Object.entries(places)) {
+    for (const [place, [lat, lon]] of Object.entries(places)) {
         viewer.entities.add({
             parent: canaryCurrentPlaces,
             position: Cesium.Cartesian3.fromDegrees(lon, lat),
@@ -233,17 +242,7 @@ for (const param of Object.keys(params)) {
             clampToGround: true,
         },
     });
-    /*
-    Via:
-  
-    var flyto = {
-      orientation: {heading: viewer.camera.heading, pitch: viewer.camera.pitch, roll: viewer.camera.roll},
-      destination:
-          Cesium.Cartesian3.fromDegrees(Cesium.Math.toDegrees(viewer.scene.camera.positionCartographic.longitude),
-                                        Cesium.Math.toDegrees(viewer.scene.camera.positionCartographic.latitude),
-                                        viewer.scene.camera.positionCartographic.height)
-    };
-    */
+    // Via cameraParameters()
     viewer.camera.flyTo({
         destination: Cesium.Cartesian3.fromDegrees(-19.8, 7.1, 9918918),
         orientation: { heading: Cesium.Math.toRadians(43), pitch: Cesium.Math.toRadians(-79), roll: Cesium.Math.toRadians(350) }
@@ -263,3 +262,22 @@ for (const param of Object.keys(params)) {
     ul.appendChild(li);
 }
 (_b = document.querySelector('#controls')) === null || _b === void 0 ? void 0 : _b.appendChild(ul);
+function cameraParameters() {
+    var flyto = {
+        orientation: { heading: viewer.camera.heading, pitch: viewer.camera.pitch, roll: viewer.camera.roll },
+        destination: Cesium.Cartesian3.fromDegrees(Cesium.Math.toDegrees(viewer.scene.camera.positionCartographic.longitude), Cesium.Math.toDegrees(viewer.scene.camera.positionCartographic.latitude), viewer.scene.camera.positionCartographic.height),
+        orientationDegrees: {
+            heading: Cesium.Math.toDegrees(viewer.camera.heading),
+            pitch: Cesium.Math.toDegrees(viewer.camera.pitch),
+            roll: Cesium.Math.toDegrees(viewer.camera.roll)
+        },
+        destinationDegrees: {
+            long: Cesium.Math.toDegrees(viewer.scene.camera.positionCartographic.longitude),
+            lat: Cesium.Math.toDegrees(viewer.scene.camera.positionCartographic.latitude),
+            height: viewer.scene.camera.positionCartographic.height
+        },
+    };
+    console.log('Camera parameters:', flyto);
+    return flyto;
+}
+window.cameraParameters = cameraParameters;
