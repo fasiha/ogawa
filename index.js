@@ -32,7 +32,7 @@ const createDefaultImageryProviderViewModels = Cesium.createDefaultImageryProvid
 var models = createDefaultImageryProviderViewModels().filter(model => model.name !== 'Earth at night');
 var model = new Cesium.ProviderViewModel({
     name: 'Black Marble Night Lights',
-    iconUrl: 'Widgets/Images/ImageryProviders/earthAtNight.png',
+    iconUrl: 'Cesium-1.86.1/Widgets/Images/ImageryProviders/earthAtNight.png',
     tooltip: 'Nighttime view of the Earth, collected by the Suomi NPP satellite in 2012',
     creationFunction: function () {
         return new Cesium.TileMapServiceImageryProvider({ url: 'https://fasiha.github.io/nasa-black-marble-tiles', credit: new Cesium.Credit('NASA Night Lights 2012') });
@@ -120,7 +120,7 @@ for (const param of Object.keys(params)) {
     function riversLoaded() {
         for (let i = 0; i < viewer.dataSources.length; i++) {
             const src = viewer.dataSources.get(i);
-            if (src.name.startsWith('ne_10m_rivers_lake_centerlines_scale_rank')) {
+            if (src.name.includes('ne_10m_rivers_lake_centerlines_scale_rank')) {
                 return src;
             }
         }
@@ -140,7 +140,7 @@ for (const param of Object.keys(params)) {
             // We want rivers!
             var scene = viewer.scene;
             var pickedName = '';
-            Cesium.GeoJsonDataSource.load('ne_10m_rivers_lake_centerlines_scale_rank.json', { credit: 'Natural Earth II' })
+            Cesium.GeoJsonDataSource.load('data/ne_10m_rivers_lake_centerlines_scale_rank.json', { credit: 'Natural Earth II' })
                 .then(dataSource => {
                 const entities = dataSource.entities.values;
                 const r = new Set('Gambia,Sénégal,Niger,Benue'.split(','));
