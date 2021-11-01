@@ -32,6 +32,9 @@ if (window) {
   (window as any).viewer = viewer;
 }
 
+// We want rivers!
+var scene = viewer.scene;
+var pickedName = '';
 Cesium.GeoJsonDataSource.load('ne_10m_rivers_lake_centerlines_scale_rank.json', {credit: 'Natural Earth II'})
     .then(dataSource => {
       const entities = dataSource.entities.values;
@@ -41,16 +44,40 @@ Cesium.GeoJsonDataSource.load('ne_10m_rivers_lake_centerlines_scale_rank.json', 
         if (polyline) {
           polyline.clampToGround = true as any;
           const properties: Record<string, any> = entity.properties as any;
-          if (r.has('' + properties['name'])) {
-            polyline.material = Cesium.Color.HOTPINK as any;
-          } else {
-            polyline.material = Cesium.Color.WHITE as any;
-          }
+          const name = '' + properties['name'];
+          const normalColor = r.has(name) ? Cesium.Color.HOTPINK : Cesium.Color.WHITE;
+          polyline.material = new Cesium.ColorMaterialProperty(new Cesium.CallbackProperty(
+              (_time, result) => (pickedName === name ? Cesium.Color.SIENNA : normalColor).clone(result), false));
           polyline.width = 1 + Math.max(0, 10 - properties['scalerank']) / 4 as any;
         }
       }
       viewer.dataSources.add(dataSource);
     });
+// We want to see river names!
+var cursor = viewer.entities.add({
+  label: {
+    show: false,
+    showBackground: true,
+    font: "14px",
+    horizontalOrigin: Cesium.HorizontalOrigin.LEFT,
+    verticalOrigin: Cesium.VerticalOrigin.TOP,
+    pixelOffset: new Cesium.Cartesian2(15, 0),
+  },
+});
+var handler = new Cesium.ScreenSpaceEventHandler(scene.canvas);
+handler.setInputAction(function(movement) {
+  var pickedObject = scene.pick(movement.endPosition);
+  var cartesian = viewer.camera.pickEllipsoid(movement.endPosition, scene.globe.ellipsoid);
+  if (pickedObject?.id?.name && cartesian) {
+    cursor.position = cartesian as any;
+    (cursor as any).label.show = true;
+    pickedName = pickedObject?.id?.name;
+    (cursor as any).label.text = pickedName as any;
+  } else {
+    (cursor as any).label.show = false;
+    pickedName = '';
+  }
+}, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
 
 // Add our texture-shaded elevation!
 function addAdditionalLayerOption(imageryProvider: Cesium.TileMapServiceImageryProvider, alpha: number,
