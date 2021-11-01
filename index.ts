@@ -184,4 +184,60 @@ for (const param of (Object.keys(params) as Param[])) {
   li.appendChild(label);
   ul.appendChild(li);
 }
+{
+  // latlon
+  var places = {
+    Bojador: [26.133333, -14.5],       // Via https://en.wikipedia.org/wiki/Cape_Bojador
+    Canaries: [27.931944, -15.386667], // LPA airport
+    Madeira: [32.694167, -16.778056],  // FNC airport
+    Azores: [37.741944, -25.697778],   // PDL airport
+    Lisbon: [38.774167, -9.134167],    // LIS airport
+    Nouakchott: [18.08581, -15.9785],  // via https://en.wikipedia.org/wiki/Nouakchott
+  };
+  // https://www.4cities4dev.eu/filemanager/Materiali/ING_fotostoria_MAURITANIA_b.pdf mentions salt mining in Nouakchott
+  // too
+
+  var canaryCurrentPlaces = viewer.entities.add(new Cesium.Entity());
+  var labelParams = {
+    font: '14px sans-serif',
+    fillColor: Cesium.Color.WHITE,
+    outlineColor: Cesium.Color.BLACK,
+    outlineWidth: 3,
+    style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+  };
+  for (var [place, [lat, lon]] of Object.entries(places)) {
+    viewer.entities.add({
+      parent: canaryCurrentPlaces,
+      position: Cesium.Cartesian3.fromDegrees(lon, lat),
+      label: {...labelParams, text: place},
+    });
+  }
+
+  viewer.entities.add({
+    name: "Canary Current avoidance route",
+    parent: canaryCurrentPlaces,
+    polyline: {
+      positions: Cesium.Cartesian3.fromDegreesArray([
+        places.Bojador, places.Canaries, places.Madeira, places.Azores, places.Lisbon
+      ].flatMap(([lat, lon]) => [lon, lat])),
+      material: Cesium.Color.YELLOW,
+      width: 1,
+      clampToGround: true,
+    },
+  });
+
+  const toggle = document.createElement('input');
+  toggle.type = 'checkbox';
+  toggle.id = 'checkbox-canary-current';
+  toggle.name = 'checkbox-canary-current';
+  toggle.checked = true;
+  toggle.onchange = e => { canaryCurrentPlaces.show = (e.target as any).checked; };
+  const label = document.createElement('label');
+  label.htmlFor = toggle.name;
+  label.textContent = 'Show Canary Current avoidance route?';
+  const li = document.createElement('li');
+  li.appendChild(toggle);
+  li.appendChild(label);
+  ul.appendChild(li);
+}
 document.querySelector('#controls')?.appendChild(ul)
